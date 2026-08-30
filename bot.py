@@ -1,4 +1,6 @@
+
 import os
+import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
@@ -16,19 +18,31 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "✅ عکس دریافت شد!\n\n"
-        "در مرحله بعد، موتور تشخیص الگو را به من اضافه می‌کنیم."
+        "فعلاً عکس را دریافت کردم.\n"
+        "در مرحله بعد موتور هوشمند تشخیص الگو را اضافه می‌کنیم."
     )
 
 
-def main():
+async def run_bot():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.PHOTO, receive_photo))
 
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+
     print("Bot is running...")
-    app.run_polling()
+
+    try:
+        while True:
+            await asyncio.sleep(3600)
+    finally:
+        await app.updater.stop()
+        await app.stop()
+        await app.shutdown()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(run_bot())
